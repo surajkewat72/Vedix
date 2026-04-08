@@ -51,8 +51,7 @@ async def calculate_birth_chart(
         }, on_conflict="user_id").execute()
 
     except Exception as e:
-        logger.warning(f"Failed to save chart to Supabase: {e}")
-        # Still return the chart even if save fails
+        logger.warning(f"Failed to save chart to Supabase (missing tables): {e}")
 
     return BirthDetailsResponse(success=True, chart=chart)
 

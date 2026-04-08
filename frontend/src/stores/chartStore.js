@@ -8,6 +8,7 @@ export const useChartStore = create((set, get) => ({
   error: null,
 
   fetchMyChart: async () => {
+    if (get().hasBirthDetails) return;
     set({ loading: true, error: null })
     try {
       const result = await chartApi.getMyChart()

@@ -50,7 +50,7 @@ export default function ChartPage() {
             <div style={{ fontSize: '3rem', marginBottom: '16px' }}>🌟</div>
             <h2 style={{ fontFamily: 'var(--font-display)', color: 'white', marginBottom: '12px' }}>No Chart Found</h2>
             <p style={{ color: 'var(--color-text-muted)', marginBottom: '28px' }}>Enter your birth details to generate your personalized Vedic chart.</p>
-            <BirthForm onSuccess={() => window.location.reload()} />
+            <BirthForm onSuccess={() => {}} />
           </div>
         )}
 

@@ -5,7 +5,11 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-geolocator = Nominatim(user_agent="vedix-astrology-app")
+import ssl
+import certifi
+
+ctx = ssl.create_default_context(cafile=certifi.where())
+geolocator = Nominatim(user_agent="vedix-astrology-app", ssl_context=ctx)
 tf = TimezoneFinder()
 
 

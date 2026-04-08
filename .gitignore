@@ -1,26 +1,16 @@
-# Python
-__pycache__/
-*.py[cod]
-*$py.class
+# Virtual Environments
 venv/
-backend/venv/
+venv*/
+*/venv/
+*/venv*/
+__pycache__/
+*.pyc
+
+# Environment files
 .env
 .env.*
+!.env.example
 
-# Node
-node_modules/
-dist/
-dist-ssr/
-
-# Editor
-.vscode/
-.idea/
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?
-
-# OS
+# OS generated files
 .DS_Store
 *.DS_Store

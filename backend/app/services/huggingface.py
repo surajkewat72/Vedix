@@ -45,7 +45,7 @@ async def stream_chat_response(
     messages.append({"role": "user", "content": user_message})
 
     payload = {
-        "model": "mistralai/Mistral-7B-Instruct-v0.3",
+        "model": "meta-llama/Llama-3.3-70B-Instruct",
         "messages": messages,
         "max_tokens": 1000,
         "temperature": 0.6,
@@ -57,7 +57,7 @@ async def stream_chat_response(
         "Content-Type": "application/json"
     }
     
-    API_URL = "https://router.huggingface.co/hf-inference/v1/chat/completions"
+    API_URL = "https://router.huggingface.co/v1/chat/completions"
 
     try:
         async with httpx.AsyncClient(timeout=120.0) as client:
