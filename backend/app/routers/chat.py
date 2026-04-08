@@ -36,7 +36,7 @@ async def send_message(
 
     async def generate():
         full_response = []
-        async for chunk in stream_chat_response(body.message, chart_summary, history):
+        async for chunk in stream_chat_response(body.message, chart_summary, history, body.language):
             full_response.append(chunk)
             yield f"data: {json.dumps({'content': chunk})}\n\n"
 

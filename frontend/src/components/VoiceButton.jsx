@@ -4,7 +4,18 @@ import { Mic, MicOff, Volume2, VolumeX } from 'lucide-react'
 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition
 const speechSynthesis = window.speechSynthesis
 
-export default function VoiceButton({ onTranscript, lastAiMessage }) {
+const languageToLocale = {
+  'English': 'en-IN',
+  'Hinglish': 'en-IN',
+  'Hindi': 'hi-IN',
+  'Bengali': 'bn-IN',
+  'Marathi': 'mr-IN',
+  'Telugu': 'te-IN',
+  'Tamil': 'ta-IN',
+  'Gujarati': 'gu-IN'
+}
+
+export default function VoiceButton({ onTranscript, lastAiMessage, language = 'English' }) {
   const [isListening, setIsListening] = useState(false)
   const [isSpeaking, setIsSpeaking] = useState(false)
   const [recognition, setRecognition] = useState(null)
@@ -17,7 +28,7 @@ export default function VoiceButton({ onTranscript, lastAiMessage }) {
     }
 
     const rec = new SpeechRecognition()
-    rec.lang = 'en-IN'
+    rec.lang = languageToLocale[language] || 'en-IN'
     rec.interimResults = false
     rec.maxAlternatives = 1
     rec.continuous = false
@@ -56,14 +67,31 @@ export default function VoiceButton({ onTranscript, lastAiMessage }) {
     }
 
     const utterance = new SpeechSynthesisUtterance(lastAiMessage)
-    utterance.lang = 'en-IN'
+    const targetLocale = languageToLocale[language] || 'en-IN'
+    const targetLangPrefix = targetLocale.split('-')[0]
+    
+    utterance.lang = targetLocale
     utterance.rate = 0.92
     utterance.pitch = 1.0
     utterance.volume = 1
 
-    // Try to find a good Indian English voice
+    // Try to find a good localized voice
     const voices = speechSynthesis.getVoices()
-    const preferred = voices.find(v => v.lang.includes('en-IN') || v.name.includes('Google') || v.name.includes('Samantha'))
+    let preferred = null
+    
+    if (language === 'Hindi') {
+      preferred = voices.find(v => v.lang === 'hi-IN' && v.name.includes('Google')) ||
+                  voices.find(v => v.lang === 'hi-IN') ||
+                  voices.find(v => v.lang.startsWith('hi'))
+    }
+    
+    if (!preferred) {
+      preferred = voices.find(v => v.lang === targetLocale && v.name.includes('Google')) ||
+                  voices.find(v => v.lang === targetLocale) ||
+                  voices.find(v => v.lang.startsWith(targetLangPrefix)) ||
+                  voices.find(v => v.name.includes('Samantha') || v.name.includes('Google'))
+    }
+
     if (preferred) utterance.voice = preferred
 
     utterance.onstart = () => setIsSpeaking(true)

@@ -49,7 +49,7 @@ export const chatApi = {
    * onChunk(text) is called for each streamed chunk.
    * onDone() is called when streaming ends.
    */
-  sendMessage: async (message, history = [], onChunk, onDone) => {
+  sendMessage: async (message, history = [], onChunk, onDone, language = 'English') => {
     const token = await getToken()
     const res = await fetch(`${BASE_URL}/chat/send`, {
       method: 'POST',
@@ -57,7 +57,7 @@ export const chatApi = {
         'Content-Type': 'application/json',
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
       },
-      body: JSON.stringify({ message, history }),
+      body: JSON.stringify({ message, history, language }),
     })
 
     if (!res.ok) throw new Error(`Chat error: HTTP ${res.status}`)

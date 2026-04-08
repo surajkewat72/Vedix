@@ -75,6 +75,7 @@ class ChatMessage(BaseModel):
 class ChatRequest(BaseModel):
     message: str
     history: Optional[List[ChatMessage]] = []
+    language: Optional[str] = "English"
 
 
 class ChatResponse(BaseModel):

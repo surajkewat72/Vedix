@@ -11,8 +11,10 @@ const SUGGESTED = [
   "What are my life's biggest challenges?",
 ]
 
+const LANGUAGES = ['English', 'Hinglish', 'Hindi', 'Bengali', 'Marathi', 'Telugu', 'Tamil', 'Gujarati']
+
 export default function ChatInterface() {
-  const { messages, isStreaming, currentStream, sendMessage, loadHistory, clearHistory } = useChatStore()
+  const { messages, isStreaming, currentStream, sendMessage, loadHistory, clearHistory, botLanguage, setLanguage } = useChatStore()
   const [input, setInput] = useState('')
   const bottomRef = useRef(null)
   const inputRef = useRef(null)
@@ -66,22 +68,42 @@ export default function ChatInterface() {
             </div>
           </div>
         </div>
-        <button
-          id="clear-chat-btn"
-          onClick={clearHistory}
-          title="Clear conversation"
-          style={{
-            background: 'transparent', border: 'none',
-            color: 'var(--color-text-dim)', cursor: 'pointer',
-            display: 'flex', alignItems: 'center', gap: '6px',
-            fontSize: '0.8rem', padding: '6px 10px',
-            borderRadius: '6px', transition: 'color 0.2s',
-          }}
-          onMouseEnter={e => e.currentTarget.style.color = '#f87171'}
-          onMouseLeave={e => e.currentTarget.style.color = 'var(--color-text-dim)'}
-        >
-          <Trash2 size={14} /> Clear
-        </button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <select 
+            value={botLanguage}
+            onChange={(e) => setLanguage(e.target.value)}
+            style={{
+              background: 'rgba(255,255,255,0.05)',
+              border: '1px solid var(--color-border)',
+              color: 'var(--color-text)',
+              padding: '6px 10px',
+              borderRadius: '6px',
+              fontSize: '0.8rem',
+              outline: 'none',
+              cursor: 'pointer'
+            }}
+          >
+            {LANGUAGES.map(lang => (
+              <option key={lang} value={lang} style={{ background: '#110D1E' }}>{lang}</option>
+            ))}
+          </select>
+          <button
+            id="clear-chat-btn"
+            onClick={clearHistory}
+            title="Clear conversation"
+            style={{
+              background: 'transparent', border: 'none',
+              color: 'var(--color-text-dim)', cursor: 'pointer',
+              display: 'flex', alignItems: 'center', gap: '6px',
+              fontSize: '0.8rem', padding: '6px 10px',
+              borderRadius: '6px', transition: 'color 0.2s',
+            }}
+            onMouseEnter={e => e.currentTarget.style.color = '#f87171'}
+            onMouseLeave={e => e.currentTarget.style.color = 'var(--color-text-dim)'}
+          >
+            <Trash2 size={14} /> Clear
+          </button>
+        </div>
       </div>
 
       {/* Messages */}
@@ -220,6 +242,7 @@ export default function ChatInterface() {
           <VoiceButton
             onTranscript={(text) => setInput(text)}
             lastAiMessage={lastAiMessage}
+            language={botLanguage}
           />
 
           <button

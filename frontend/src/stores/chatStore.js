@@ -6,6 +6,9 @@ export const useChatStore = create((set, get) => ({
   isStreaming: false,
   currentStream: '',
   error: null,
+  botLanguage: 'English',
+
+  setLanguage: (lang) => set({ botLanguage: lang }),
 
   loadHistory: async () => {
     try {
@@ -61,7 +64,8 @@ export const useChatStore = create((set, get) => ({
             isStreaming: false,
             currentStream: '',
           }))
-        }
+        },
+        get().botLanguage
       )
     } catch (err) {
       set({

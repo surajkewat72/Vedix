@@ -16,6 +16,7 @@ async def stream_chat_response(
     user_message: str,
     chart_summary: Optional[str],
     history: Optional[List[dict]] = None,
+    language: str = "English",
 ) -> AsyncGenerator[str, None]:
     """
     Streams a chat response from Hugging Face Inference API.
@@ -28,8 +29,14 @@ async def stream_chat_response(
         return
 
     # Build message list (OpenAI-compatible format supported by HF Router API)
+    system_instruction = SYSTEM_PROMPT
+    if language.lower() == "hinglish":
+        system_instruction += "\nIMPORTANT: You MUST respond entirely in Hinglish (Hindi language written with the English alphabet). Keep it natural, conversational, and spiritual."
+    elif language.lower() != "english":
+        system_instruction += f"\nIMPORTANT: You MUST respond fluently in {language} using its native script. Do not respond in English."
+
     messages = [
-        {"role": "system", "content": SYSTEM_PROMPT}
+        {"role": "system", "content": system_instruction}
     ]
 
     # Add chart context as part of the system instructions
