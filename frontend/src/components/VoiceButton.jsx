@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { Mic, MicOff, Volume2, VolumeX } from 'lucide-react'
 
 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition
@@ -12,14 +12,16 @@ const languageToLocale = {
   'Marathi': 'mr-IN',
   'Telugu': 'te-IN',
   'Tamil': 'ta-IN',
-  'Gujarati': 'gu-IN'
+  'Gujarati': 'gu-IN',
+  'Kannada': 'kn-IN'
 }
 
-export default function VoiceButton({ onTranscript, lastAiMessage, language = 'English' }) {
+export default function VoiceButton({ onTranscript, lastAiMessage, language = 'English', autoSpeak = false, isStreaming = false, messageId = null }) {
   const [isListening, setIsListening] = useState(false)
   const [isSpeaking, setIsSpeaking] = useState(false)
   const [recognition, setRecognition] = useState(null)
   const [error, setError] = useState(null)
+  const [lastSpokenId, setLastSpokenId] = useState(null)
 
   const startListening = useCallback(() => {
     if (!SpeechRecognition) {
@@ -66,7 +68,9 @@ export default function VoiceButton({ onTranscript, lastAiMessage, language = 'E
       return
     }
 
-    const utterance = new SpeechSynthesisUtterance(lastAiMessage)
+    // Clean text: remove asterisks or markdown to avoid hearing them spoken
+    const cleanText = lastAiMessage.replace(/[*_#]/g, '')
+    const utterance = new SpeechSynthesisUtterance(cleanText)
     const targetLocale = languageToLocale[language] || 'en-IN'
     const targetLangPrefix = targetLocale.split('-')[0]
     
@@ -99,7 +103,15 @@ export default function VoiceButton({ onTranscript, lastAiMessage, language = 'E
     utterance.onerror = () => setIsSpeaking(false)
 
     speechSynthesis.speak(utterance)
-  }, [lastAiMessage, isSpeaking])
+  }, [lastAiMessage, isSpeaking, language])
+
+  useEffect(() => {
+    // Determine if we should auto-speak
+    if (autoSpeak && lastAiMessage && !isStreaming && messageId && messageId !== lastSpokenId) {
+      speakMessage()
+      setLastSpokenId(messageId)
+    }
+  }, [autoSpeak, lastAiMessage, isStreaming, messageId, lastSpokenId, speakMessage])
 
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>

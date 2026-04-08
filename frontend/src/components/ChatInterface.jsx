@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useChatStore } from '../stores/chatStore'
 import VoiceButton from './VoiceButton'
-import { Send, Trash2, Sparkles } from 'lucide-react'
+import { Send, Trash2, Sparkles, Headphones } from 'lucide-react'
 
 const SUGGESTED = [
   "What does my Sun sign say about my personality?",
@@ -11,11 +11,12 @@ const SUGGESTED = [
   "What are my life's biggest challenges?",
 ]
 
-const LANGUAGES = ['English', 'Hinglish', 'Hindi', 'Bengali', 'Marathi', 'Telugu', 'Tamil', 'Gujarati']
+const LANGUAGES = ['English', 'Hinglish', 'Hindi', 'Bengali', 'Marathi', 'Telugu', 'Tamil', 'Gujarati', 'Kannada']
 
 export default function ChatInterface() {
   const { messages, isStreaming, currentStream, sendMessage, loadHistory, clearHistory, botLanguage, setLanguage } = useChatStore()
   const [input, setInput] = useState('')
+  const [voiceMode, setVoiceMode] = useState(false)
   const bottomRef = useRef(null)
   const inputRef = useRef(null)
 
@@ -24,12 +25,27 @@ export default function ChatInterface() {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages, currentStream])
 
+  const handleSendText = async (textToSend) => {
+    if (!textToSend.trim() || isStreaming) return
+    await sendMessage(textToSend)
+    inputRef.current?.focus()
+  }
+
   const handleSend = async () => {
     if (!input.trim() || isStreaming) return
     const text = input.trim()
     setInput('')
-    await sendMessage(text)
-    inputRef.current?.focus()
+    await handleSendText(text)
+  }
+
+  const handleVoiceInput = (text) => {
+    setInput(text)
+    if (voiceMode) {
+      setTimeout(() => {
+        handleSendText(text)
+        setInput('')
+      }, 50)
+    }
   }
 
   const handleKeyDown = (e) => {
@@ -39,7 +55,9 @@ export default function ChatInterface() {
     }
   }
 
-  const lastAiMessage = [...messages].reverse().find(m => m.role === 'assistant')?.content || ''
+  const lastAiMessageObj = [...messages].reverse().find(m => m.role === 'assistant')
+  const lastAiMessage = lastAiMessageObj?.content || ''
+  const lastAiMessageId = lastAiMessageObj?.id || ''
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%', position: 'relative' }}>
@@ -69,6 +87,25 @@ export default function ChatInterface() {
           </div>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <button
+            onClick={() => setVoiceMode(!voiceMode)}
+            title={voiceMode ? 'Voice Mode ON (Hands-free)' : 'Voice Mode OFF'}
+            style={{
+              background: voiceMode ? 'rgba(16, 185, 129, 0.2)' : 'rgba(255,255,255,0.05)',
+              border: `1px solid ${voiceMode ? 'rgba(16, 185, 129, 0.4)' : 'var(--color-border)'}`,
+              color: voiceMode ? '#34d399' : 'var(--color-text)',
+              padding: '6px 10px',
+              borderRadius: '6px',
+              fontSize: '0.8rem',
+              display: 'flex', alignItems: 'center', gap: '6px',
+              cursor: 'pointer',
+              transition: 'all 0.2s',
+            }}
+          >
+            <Headphones size={14} />
+            {voiceMode ? 'Voice ON' : 'Voice OFF'}
+          </button>
+          
           <select 
             value={botLanguage}
             onChange={(e) => setLanguage(e.target.value)}
@@ -240,9 +277,12 @@ export default function ChatInterface() {
           </div>
 
           <VoiceButton
-            onTranscript={(text) => setInput(text)}
+            onTranscript={handleVoiceInput}
             lastAiMessage={lastAiMessage}
             language={botLanguage}
+            autoSpeak={voiceMode}
+            isStreaming={isStreaming}
+            messageId={lastAiMessageId}
           />
 
           <button
