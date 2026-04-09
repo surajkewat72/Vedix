@@ -27,20 +27,9 @@ app = FastAPI(
 
 settings = get_settings()
 
-# Configure CORS
-base_frontend = settings.frontend_url.rstrip("/")
-origins = [
-    base_frontend,
-    f"{base_frontend}/",
-    "http://localhost:5173",
-    "http://localhost:3000",
-]
-# Filter out empty strings and ensure uniqueness
-origins = list(set(o for o in origins if o))
-
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

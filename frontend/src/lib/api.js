@@ -45,7 +45,7 @@ export const chartApi = {
 // ─── Chat API ───────────────────────────────────────────────────────────────
 
 export const chatApi = {
-  /*,
+  /**
    * Send a message and receive a streaming SSE response.
    * onChunk(text) is called for each streamed chunk.
    * onDone() is called when streaming ends.
