@@ -1,6 +1,7 @@
 import { supabase } from './supabase'
 
-const BASE_URL = import.meta.env.VITE_API_URL || '/api'
+const API_URL = import.meta.env.VITE_API_URL || ''
+const BASE_URL = `${API_URL}/api`
 
 /** Get the current session's access token */
 async function getToken() {
@@ -44,7 +45,7 @@ export const chartApi = {
 // ─── Chat API ───────────────────────────────────────────────────────────────
 
 export const chatApi = {
-  /**
+  /*,
    * Send a message and receive a streaming SSE response.
    * onChunk(text) is called for each streamed chunk.
    * onDone() is called when streaming ends.

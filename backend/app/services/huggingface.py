@@ -194,7 +194,8 @@ You MUST output ONLY a valid JSON object with the following structure exactly, n
     API_URL = "https://router.huggingface.co/v1/chat/completions"
 
     try:
-        async with httpx.AsyncClient(timeout=60.0) as client:
+        # Reduced timeout to 12s so it fails fast if slow
+        async with httpx.AsyncClient(timeout=12.0) as client:
             response = await client.post(API_URL, json=payload, headers=headers)
             response.raise_for_status()
             
@@ -256,7 +257,8 @@ Your reading should be 3-4 majestic paragraphs long.
     API_URL = "https://router.huggingface.co/v1/chat/completions"
 
     try:
-        async with httpx.AsyncClient(timeout=80.0) as client:
+        # Reduced timeout to 15s so it fails fast if slow
+        async with httpx.AsyncClient(timeout=15.0) as client:
             response = await client.post(API_URL, json=payload, headers=headers)
             response.raise_for_status()
             

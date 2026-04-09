@@ -38,14 +38,21 @@ async def calculate_birth_chart(
 
     # Generate life area insights using LLM
     try:
+        # We use a short timeout inside the service, but we also catch errors here
+        logger.info(f"Generating AI insights for user {user_id}...")
         raw_areas = await generate_life_areas(chart.chart_summary)
         if raw_areas:
             chart.life_areas = [LifeArea(**area) for area in raw_areas]
+        else:
+            logger.warning("AI life areas generation returned empty or failed.")
             
-        # Also generate an authentic chart reading summary instead of showing raw technical data
+        # Also generate an authentic chart reading summary
         chart.chart_summary = await generate_chart_reading(chart.chart_summary)
     except Exception as e:
-        logger.error(f"Failed to generate AI insights: {e}")
+        logger.error(f"Failed to generate AI insights (likely timeout on Render): {e}")
+        # We don't fail the whole request, we just return the technical chart data
+        if not chart.life_areas:
+            chart.life_areas = []
 
     # Save to Supabase
     try:

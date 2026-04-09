@@ -13,7 +13,6 @@ logger = logging.getLogger(__name__)
 async def lifespan(app: FastAPI):
     settings = get_settings()
     logger.info("🔮 Vedix API starting up...")
-    logger.info(f"   Ollama: {settings.ollama_base_url} | Model: {settings.ollama_model}")
     logger.info(f"   Supabase: {settings.supabase_url[:40]}..." if settings.supabase_url else "   Supabase: NOT CONFIGURED")
     yield
     logger.info("🔮 Vedix API shutting down...")
