@@ -5,6 +5,7 @@ import CosmicBackground from '../components/CosmicBackground'
 import ZodiacWheel from '../components/ZodiacWheel'
 import PlanetCard from '../components/PlanetCard'
 import BirthForm from '../components/BirthForm'
+import LifeAreasChart from '../components/LifeAreasChart'
 import { RefreshCw, MessageCircle, Star, MapPin, Calendar } from 'lucide-react'
 
 export default function ChartPage() {
@@ -125,40 +126,8 @@ export default function ChartPage() {
               </div>
 
               {activeTab === 'areas' && (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                  {(!chart.life_areas || chart.life_areas.length === 0) ? (
-                    <div className="card" style={{ padding: '24px', textAlign: 'center', color: 'var(--color-text-muted)' }}>
-                      <p>Life area insights are not available for this chart.</p>
-                      <p style={{ fontSize: '0.8rem', marginTop: '8px' }}>Generate a new chart to see AI insights.</p>
-                    </div>
-                  ) : (
-                    chart.life_areas.map((area, i) => (
-                      <div key={i} className="card" style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '12px', animation: `fadeIn 0.4s ease-out ${i * 0.1}s forwards`, opacity: 0 }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                          <h3 style={{ margin: 0, fontSize: '1.05rem', color: 'var(--color-text)', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            <span style={{ fontSize: '1.3rem' }}>{area.emoji}</span> {area.name}
-                          </h3>
-                          <div style={{ fontSize: '0.9rem', fontWeight: 'bold', color: 'var(--color-accent)', background: 'rgba(124,58,237,0.1)', padding: '4px 10px', borderRadius: '12px' }}>
-                            {area.score}/10
-                          </div>
-                        </div>
-                        
-                        <div style={{ width: '100%', height: '6px', background: 'rgba(255,255,255,0.05)', borderRadius: '4px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.02)' }}>
-                          <div style={{ width: `${Math.max(5, area.score * 10)}%`, height: '100%', background: 'linear-gradient(90deg, #7c3aed, #a855f7)', borderRadius: '4px' }} />
-                        </div>
-                        
-                        <div style={{ fontSize: '0.9rem', color: 'var(--color-text)', lineHeight: '1.6', marginTop: '4px' }}>
-                          <span style={{ color: 'var(--color-primary-light)', fontWeight: '600' }}>Insight: </span>
-                          {area.insight}
-                        </div>
-                        
-                        <div style={{ fontSize: '0.85rem', color: 'var(--color-text-dim)', lineHeight: '1.5', background: 'rgba(16, 185, 129, 0.05)', padding: '12px', borderRadius: '8px', borderLeft: '3px solid #10b981' }}>
-                          <span style={{ color: '#34d399', fontWeight: '600', display: 'block', marginBottom: '4px' }}>Advice</span>
-                          {area.advice}
-                        </div>
-                      </div>
-                    ))
-                  )}
+                <div style={{ animation: 'fadeIn 0.5s ease-out' }}>
+                  <LifeAreasChart areas={chart.life_areas} />
                 </div>
               )}
 
