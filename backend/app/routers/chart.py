@@ -1,7 +1,8 @@
 from fastapi import APIRouter, Depends
 from app.routers.auth import get_current_user
-from app.models import BirthDetailsRequest, BirthDetailsResponse
+from app.models import BirthDetailsRequest, BirthDetailsResponse, LifeArea
 from app.services.astrology import calculate_chart
+from app.services.huggingface import generate_life_areas
 from app.supabase_client import get_supabase_admin
 import logging
 
@@ -34,6 +35,14 @@ async def calculate_birth_chart(
             success=False,
             message="Failed to calculate chart. Please check birth details.",
         )
+
+    # Generate life area insights using LLM
+    try:
+        raw_areas = await generate_life_areas(chart.chart_summary)
+        if raw_areas:
+            chart.life_areas = [LifeArea(**area) for area in raw_areas]
+    except Exception as e:
+        logger.error(f"Failed to generate life areas: {e}")
 
     # Save to Supabase
     try:

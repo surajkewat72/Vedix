@@ -75,25 +75,35 @@ export default function VoiceButton({ onTranscript, lastAiMessage, language = 'E
     const targetLangPrefix = targetLocale.split('-')[0]
     
     utterance.lang = targetLocale
-    utterance.rate = 0.92
-    utterance.pitch = 1.0
+    utterance.rate = 0.94
+    utterance.pitch = 1.05
     utterance.volume = 1
 
     // Try to find a good localized voice
     const voices = speechSynthesis.getVoices()
     let preferred = null
     
-    if (language === 'Hindi') {
-      preferred = voices.find(v => v.lang === 'hi-IN' && v.name.includes('Google')) ||
-                  voices.find(v => v.lang === 'hi-IN') ||
-                  voices.find(v => v.lang.startsWith('hi'))
+    const premiumKeywords = ['Premium', 'Enhanced', 'Google', 'Rishi', 'Veena', 'Lekha', 'Samantha', 'Daniel']
+    const findVoice = (condition) => voices.find(v => condition(v) && premiumKeywords.some(k => v.name.includes(k))) || voices.find(condition)
+    
+    // Hindi and Marathi share Devanagari script, so they can fallback to each other
+    if (['Hindi', 'Marathi'].includes(language)) {
+      preferred = findVoice(v => v.lang === targetLocale) || 
+                  findVoice(v => v.lang.startsWith(targetLangPrefix)) ||
+                  findVoice(v => v.lang === 'hi-IN') || 
+                  findVoice(v => v.lang.startsWith('hi'))
+    } else {
+      // For all other languages (Gujarati, Bengali, Telugu, etc.)
+      preferred = findVoice(v => v.lang === targetLocale) ||
+                  findVoice(v => v.lang.startsWith(targetLangPrefix))
     }
     
+    // Universal fallback if absolutely needed, but for regional scripts this will be silent
     if (!preferred) {
-      preferred = voices.find(v => v.lang === targetLocale && v.name.includes('Google')) ||
-                  voices.find(v => v.lang === targetLocale) ||
-                  voices.find(v => v.lang.startsWith(targetLangPrefix)) ||
-                  voices.find(v => v.name.includes('Samantha') || v.name.includes('Google'))
+      preferred = voices.find(v => premiumKeywords.some(k => v.name.includes(k))) || voices[0]
+      if (['Gujarati', 'Bengali', 'Tamil', 'Telugu', 'Kannada'].includes(language)) {
+        setError(`⚠️ Native ${language} voice not found. Please use Chrome or select Hinglish.`)
+      }
     }
 
     if (preferred) utterance.voice = preferred

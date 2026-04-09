@@ -90,4 +90,6 @@ export const useChatStore = create((set, get) => ({
       console.error('Failed to clear history:', err)
     }
   },
+
+  resetState: () => set({ messages: [], currentStream: '', isStreaming: false, error: null }),
 }))

@@ -45,6 +45,9 @@ export const useAuthStore = create((set, get) => ({
   signOut: async () => {
     await supabase.auth.signOut()
     set({ user: null, session: null })
+    // Also clear other store states to prevent data leaking between users
+    import('./chartStore').then(module => module.useChartStore.getState().clearChart())
+    import('./chatStore').then(module => module.useChatStore.getState().resetState())
   },
 
   isAuthenticated: () => !!get().user,

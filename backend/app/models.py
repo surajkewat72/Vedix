@@ -39,6 +39,14 @@ class HousePosition(BaseModel):
     position: float
 
 
+class LifeArea(BaseModel):
+    name: str
+    emoji: str
+    score: int
+    insight: str
+    advice: str
+
+
 class ChartData(BaseModel):
     sun: PlanetPosition
     moon: PlanetPosition
@@ -57,6 +65,7 @@ class ChartData(BaseModel):
     birth_city: str
     zodiac_type: str
     chart_summary: str
+    life_areas: Optional[List[LifeArea]] = None
 
 
 class BirthDetailsResponse(BaseModel):

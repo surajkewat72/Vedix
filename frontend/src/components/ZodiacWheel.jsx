@@ -65,87 +65,138 @@ export default function ZodiacWheel({ chart }) {
     return { startAngle, endAngle, midAngle, x1, y1, x2, y2, xi1, yi1, xi2, yi2, lx, ly, sign, signName, element }
   })
 
-  const planetPositions = planets.map(p => {
-    if (!p.data) return null
-    const absPos = p.data.abs_position
-    const angle = degToRad(absPos)
-    const r = innerR - 22
-    return {
-      ...p,
-      x: cx + r * Math.cos(angle),
-      y: cy + r * Math.sin(angle),
+  // Group planets that are close to each other
+  const sortedPlanets = [...planets]
+    .filter(p => p.data)
+    .sort((a, b) => a.data.abs_position - b.data.abs_position)
+
+  const planetPositions = []
+  if (sortedPlanets.length > 0) {
+    let currentGroup = [sortedPlanets[0]]
+    for (let i = 1; i < sortedPlanets.length; i++) {
+        if (sortedPlanets[i].data.abs_position - currentGroup[currentGroup.length - 1].data.abs_position < 10) {
+            currentGroup.push(sortedPlanets[i])
+        } else {
+            planetPositions.push(currentGroup)
+            currentGroup = [sortedPlanets[i]]
+        }
     }
-  }).filter(Boolean)
+    planetPositions.push(currentGroup)
+  }
+
+  // Calculate final positions with stagger
+  const finalPlanetPositions = planetPositions.flatMap(group => {
+      const isMultiple = group.length > 1;
+      return group.map((p, i) => {
+        const baseAbsPos = p.data.abs_position;
+        // stagger them slightly if clumped
+        const adjustedPos = isMultiple ? baseAbsPos + (i - (group.length-1)/2)*8 : baseAbsPos;
+        const angle = degToRad(adjustedPos);
+        const r = innerR - 26 + (i%2)*8; // stagger radially too
+        return {
+            ...p,
+            x: cx + r * Math.cos(angle),
+            y: cy + r * Math.sin(angle),
+        }
+      })
+  })
+
 
   return (
-    <div style={{ display: 'flex', justifyContent: 'center' }}>
-      <svg width="400" height="400" viewBox="0 0 400 400" style={{ filter: 'drop-shadow(0 0 30px rgba(124,58,237,0.3))' }}>
-        {/* Background */}
-        <circle cx={cx} cy={cy} r={R + 5} fill="rgba(10, 6, 18, 0.9)" />
+    <div style={{ display: 'flex', justifyContent: 'center', position: 'relative' }}>
+      <div style={{
+          position: 'absolute',
+          top: '50%', left: '50%',
+          transform: 'translate(-50%, -50%)',
+          width: '320px', height: '320px',
+          background: 'radial-gradient(circle, rgba(124,58,237,0.2) 0%, transparent 70%)',
+          filter: 'blur(30px)',
+          zIndex: -1,
+          animation: 'pulse-glow 4s ease-in-out infinite'
+      }} />
+      <svg width="400" height="400" viewBox="0 0 400 400" style={{ filter: 'drop-shadow(0 0 15px rgba(124,58,237,0.4))' }}>
+        <defs>
+          <radialGradient id="centerGlow" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stopColor="rgba(124,58,237,0.4)" />
+            <stop offset="100%" stopColor="rgba(12, 6, 28, 0.9)" />
+          </radialGradient>
+        </defs>
 
-        {/* Zodiac sectors */}
-        {signSectors.map(({ startAngle, endAngle, x1, y1, x2, y2, xi1, yi1, xi2, yi2, lx, ly, sign, signName, element }, i) => (
-          <g key={i}>
-            <path
-              d={`M ${xi1} ${yi1} L ${x1} ${y1} A ${R} ${R} 0 0 1 ${x2} ${y2} L ${xi2} ${yi2} A ${innerR} ${innerR} 0 0 0 ${xi1} ${yi1}`}
-              fill={`${ELEMENT_COLORS[element]}15`}
-              stroke={`${ELEMENT_COLORS[element]}40`}
-              strokeWidth="0.5"
-            />
-            <text
-              x={lx} y={ly}
-              textAnchor="middle" dominantBaseline="middle"
-              fontSize="11"
-              fill={`${ELEMENT_COLORS[element]}cc`}
-              style={{ fontFamily: 'serif' }}
-            >
-              {sign.split(' ')[0]}
-            </text>
-          </g>
-        ))}
+        {/* Outer space background */}
+        <circle cx={cx} cy={cy} r={R + 8} fill="rgba(6, 3, 12, 0.95)" stroke="rgba(124,58,237,0.2)" strokeWidth="1" />
+        
+        {/* Zodiac ring */}
+        <g className="zodiac-ring" style={{ transformOrigin: '200px 200px', animation: 'spin-slow 120s linear infinite' }}>
+            {/* Zodiac sectors */}
+            {signSectors.map(({ xi1, yi1, x1, y1, x2, y2, xi2, yi2, lx, ly, sign, element }, i) => (
+            <g key={i}>
+                <path
+                d={`M ${xi1} ${yi1} L ${x1} ${y1} A ${R} ${R} 0 0 1 ${x2} ${y2} L ${xi2} ${yi2} A ${innerR} ${innerR} 0 0 0 ${xi1} ${yi1}`}
+                fill={`${ELEMENT_COLORS[element]}11`}
+                stroke={`${ELEMENT_COLORS[element]}60`}
+                strokeWidth="0.8"
+                style={{ transition: 'fill 0.3s' }}
+                onMouseEnter={e => e.currentTarget.setAttribute('fill', `${ELEMENT_COLORS[element]}25`)}
+                onMouseLeave={e => e.currentTarget.setAttribute('fill', `${ELEMENT_COLORS[element]}11`)}
+                />
+                <text
+                x={lx} y={ly}
+                textAnchor="middle" dominantBaseline="middle"
+                fontSize="12"
+                fill={`${ELEMENT_COLORS[element]}ff`}
+                style={{ fontFamily: 'var(--font-display)', letterSpacing: '0.05em', textShadow: `0 0 8px ${ELEMENT_COLORS[element]}` }}
+                >
+                {sign.split(' ')[0]}
+                </text>
+            </g>
+            ))}
 
-        {/* Outer ring */}
-        <circle cx={cx} cy={cy} r={R} fill="none" stroke="rgba(124,58,237,0.4)" strokeWidth="1" />
-        <circle cx={cx} cy={cy} r={innerR} fill="rgba(17, 13, 30, 0.9)" stroke="rgba(124,58,237,0.3)" strokeWidth="1" />
+            {/* Inner ring background */}
+            <circle cx={cx} cy={cy} r={innerR} fill="url(#centerGlow)" stroke="rgba(124,58,237,0.5)" strokeWidth="1.5" />
 
-        {/* Spoke lines */}
-        {signSectors.map(({ xi1, yi1, x1, y1 }, i) => (
-          <line key={i} x1={xi1} y1={yi1} x2={x1} y2={y1} stroke="rgba(124,58,237,0.2)" strokeWidth="0.5" />
-        ))}
+            {/* Spoke lines */}
+            {signSectors.map(({ xi1, yi1, x1, y1 }, i) => (
+            <line key={i} x1={xi1} y1={yi1} x2={x1} y2={y1} stroke="rgba(124,58,237,0.25)" strokeWidth="0.8" />
+            ))}
 
-        {/* Ascendant line */}
-        {chart.ascendant && (() => {
-          const ascAngle = degToRad(chart.houses?.[0]?.position ?? 0)
-          return (
-            <line
-              x1={cx} y1={cy}
-              x2={cx + (R + 10) * Math.cos(ascAngle)}
-              y2={cy + (R + 10) * Math.sin(ascAngle)}
-              stroke="#f59e0b" strokeWidth="2" strokeDasharray="4,3"
-              opacity="0.8"
-            />
-          )
-        })()}
+            {/* Ascendant line */}
+            {chart.ascendant && (() => {
+            const ascAngle = degToRad(chart.houses?.[0]?.position ?? 0)
+            return (
+                <g>
+                   <line
+                    x1={cx} y1={cy}
+                    x2={cx + (R + 15) * Math.cos(ascAngle)}
+                    y2={cy + (R + 15) * Math.sin(ascAngle)}
+                    stroke="#f59e0b" strokeWidth="2.5" strokeDasharray="3,4"
+                    opacity="0.9"
+                    />
+                    <circle cx={cx + (R + 15) * Math.cos(ascAngle)} cy={cy + (R + 15) * Math.sin(ascAngle)} r="4" fill="#f59e0b" style={{ filter: 'drop-shadow(0 0 5px #f59e0b)' }} />
+                </g>
+            )
+            })()}
 
-        {/* Planet markers */}
-        {planetPositions.map((p, i) => (
-          <g key={i}>
-            <circle cx={p.x} cy={p.y} r={12} fill="rgba(20,12,40,0.95)" stroke={SIGN_COLORS[p.data.sign] || '#7c3aed'} strokeWidth="1.5" />
-            <text
-              x={p.x} y={p.y}
-              textAnchor="middle" dominantBaseline="middle"
-              fontSize="10"
-              fill={SIGN_COLORS[p.data.sign] || '#a78bfa'}
-              style={{ fontFamily: 'serif' }}
-            >
-              {p.symbol}
-            </text>
-          </g>
-        ))}
+            {/* Planet markers */}
+            {finalPlanetPositions.map((p, i) => (
+            <g key={i} style={{ transition: 'transform 0.4s ease-out' }}>
+                <circle cx={p.x} cy={p.y} r={14} fill="rgba(10,5,20,0.9)" stroke={SIGN_COLORS[p.data.sign] || '#7c3aed'} strokeWidth="1.5" style={{ filter: `drop-shadow(0 0 6px ${SIGN_COLORS[p.data.sign] || '#7c3aed'})` }} />
+                <text
+                x={p.x} y={p.y + 1}
+                textAnchor="middle" dominantBaseline="middle"
+                fontSize="11"
+                fill="#ffffff"
+                style={{ fontFamily: 'var(--font-serif)', fontWeight: 'bold' }}
+                >
+                {p.symbol}
+                </text>
+            </g>
+            ))}
+        </g>
 
-        {/* Center */}
-        <circle cx={cx} cy={cy} r={20} fill="rgba(124,58,237,0.2)" stroke="rgba(124,58,237,0.5)" strokeWidth="1" />
-        <text x={cx} y={cy} textAnchor="middle" dominantBaseline="middle" fontSize="14" fill="#a78bfa" style={{ fontFamily: 'serif' }}>☸</text>
+        {/* Center fixed elements */}
+        <circle cx={cx} cy={cy} r={24} fill="rgba(10, 6, 25, 0.95)" stroke="rgba(167, 139, 250, 0.8)" strokeWidth="1" style={{ filter: 'drop-shadow(0 0 10px rgba(124,58,237,0.5))' }} />
+        <circle cx={cx} cy={cy} r={18} fill="none" stroke="rgba(167, 139, 250, 0.3)" strokeWidth="0.5" strokeDasharray="2,2" />
+        <text x={cx} y={cy + 1} textAnchor="middle" dominantBaseline="middle" fontSize="16" fill="#c084fc" style={{ filter: 'drop-shadow(0 0 5px #c084fc)' }}>☸</text>
       </svg>
     </div>
   )

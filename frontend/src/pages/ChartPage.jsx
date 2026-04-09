@@ -9,7 +9,7 @@ import { RefreshCw, MessageCircle, Star, MapPin, Calendar } from 'lucide-react'
 
 export default function ChartPage() {
   const { chart, hasBirthDetails, loading, fetchMyChart } = useChartStore()
-  const [activeTab, setActiveTab] = useState('planets')
+  const [activeTab, setActiveTab] = useState('areas')
   const navigate = useNavigate()
 
   useEffect(() => { fetchMyChart() }, [])
@@ -58,11 +58,23 @@ export default function ChartPage() {
           <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 420px) 1fr', gap: '28px', alignItems: 'start' }}>
             {/* Left: Wheel */}
             <div style={{ animation: 'fadeIn 0.6s ease-out' }}>
-              <div className="card" style={{ padding: '28px', textAlign: 'center' }}>
-                <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '1rem', color: 'var(--color-accent)', marginBottom: '20px', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
+              <div className="glass" style={{
+                padding: '28px',
+                textAlign: 'center',
+                borderRadius: 'var(--radius-xl)',
+                background: 'rgba(20, 12, 40, 0.4)',
+                boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255,255,255,0.05)',
+                position: 'relative',
+                overflow: 'hidden'
+              }}>
+                <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '1px', background: 'linear-gradient(90deg, transparent, rgba(167, 139, 250, 0.3), transparent)' }} />
+                
+                <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '0.9rem', color: 'var(--color-accent)', marginBottom: '20px', textTransform: 'uppercase', letterSpacing: '0.15em' }}>
                   Natal Wheel
                 </h2>
-                <ZodiacWheel chart={chart} />
+                <div style={{ margin: '20px 0' }}>
+                  <ZodiacWheel chart={chart} />
+                </div>
 
                 <div style={{ marginTop: '20px', display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
                   {[
@@ -71,8 +83,8 @@ export default function ChartPage() {
                     { color: '#eab308', label: 'Air' },
                     { color: '#3b82f6', label: 'Water' },
                   ].map(({ color, label }) => (
-                    <div key={label} style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.75rem', color: 'var(--color-text-dim)' }}>
-                      <div style={{ width: '8px', height: '8px', borderRadius: '2px', background: color }} />
+                    <div key={label} style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.75rem', color: 'var(--color-text-dim)', letterSpacing: '0.05em' }}>
+                      <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: color, boxShadow: `0 0 5px ${color}` }} />
                       {label}
                     </div>
                   ))}
@@ -91,8 +103,8 @@ export default function ChartPage() {
             {/* Right: Details */}
             <div style={{ animation: 'fadeIn 0.7s ease-out' }}>
               {/* Tabs */}
-              <div style={{ display: 'flex', gap: '4px', background: 'rgba(255,255,255,0.04)', borderRadius: '10px', padding: '4px', marginBottom: '20px', border: '1px solid var(--color-border)' }}>
-                {['planets', 'houses', 'summary'].map(tab => (
+              <div style={{ display: 'flex', gap: '4px', background: 'rgba(255,255,255,0.04)', borderRadius: '10px', padding: '4px', marginBottom: '20px', border: '1px solid var(--color-border)', overflowX: 'auto' }}>
+                {['areas', 'planets', 'houses', 'summary'].map(tab => (
                   <button
                     key={tab}
                     id={`chart-tab-${tab}`}
@@ -111,6 +123,44 @@ export default function ChartPage() {
                   </button>
                 ))}
               </div>
+
+              {activeTab === 'areas' && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                  {(!chart.life_areas || chart.life_areas.length === 0) ? (
+                    <div className="card" style={{ padding: '24px', textAlign: 'center', color: 'var(--color-text-muted)' }}>
+                      <p>Life area insights are not available for this chart.</p>
+                      <p style={{ fontSize: '0.8rem', marginTop: '8px' }}>Generate a new chart to see AI insights.</p>
+                    </div>
+                  ) : (
+                    chart.life_areas.map((area, i) => (
+                      <div key={i} className="card" style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '12px', animation: `fadeIn 0.4s ease-out ${i * 0.1}s forwards`, opacity: 0 }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <h3 style={{ margin: 0, fontSize: '1.05rem', color: 'var(--color-text)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <span style={{ fontSize: '1.3rem' }}>{area.emoji}</span> {area.name}
+                          </h3>
+                          <div style={{ fontSize: '0.9rem', fontWeight: 'bold', color: 'var(--color-accent)', background: 'rgba(124,58,237,0.1)', padding: '4px 10px', borderRadius: '12px' }}>
+                            {area.score}/10
+                          </div>
+                        </div>
+                        
+                        <div style={{ width: '100%', height: '6px', background: 'rgba(255,255,255,0.05)', borderRadius: '4px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.02)' }}>
+                          <div style={{ width: `${Math.max(5, area.score * 10)}%`, height: '100%', background: 'linear-gradient(90deg, #7c3aed, #a855f7)', borderRadius: '4px' }} />
+                        </div>
+                        
+                        <div style={{ fontSize: '0.9rem', color: 'var(--color-text)', lineHeight: '1.6', marginTop: '4px' }}>
+                          <span style={{ color: 'var(--color-primary-light)', fontWeight: '600' }}>Insight: </span>
+                          {area.insight}
+                        </div>
+                        
+                        <div style={{ fontSize: '0.85rem', color: 'var(--color-text-dim)', lineHeight: '1.5', background: 'rgba(16, 185, 129, 0.05)', padding: '12px', borderRadius: '8px', borderLeft: '3px solid #10b981' }}>
+                          <span style={{ color: '#34d399', fontWeight: '600', display: 'block', marginBottom: '4px' }}>Advice</span>
+                          {area.advice}
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              )}
 
               {activeTab === 'planets' && (
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '12px' }}>
