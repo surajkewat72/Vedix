@@ -150,17 +150,54 @@ export default function ChartPage() {
               )}
 
               {activeTab === 'summary' && (
-                <div className="card" style={{ padding: '20px' }}>
-                  <pre style={{
-                    fontFamily: 'var(--font-body)',
-                    fontSize: '0.82rem',
-                    color: 'var(--color-text-muted)',
-                    whiteSpace: 'pre-wrap',
-                    lineHeight: '1.7',
-                    margin: 0,
+                <div className="glass" style={{ 
+                  padding: '36px', 
+                  borderRadius: 'var(--radius-xl)', 
+                  position: 'relative', 
+                  border: '1px solid rgba(167, 139, 250, 0.4)',
+                  boxShadow: '0 12px 40px rgba(0,0,0,0.5), inset 0 0 30px rgba(124,58,237,0.15)',
+                  animation: 'fadeIn 0.5s ease-out'
+                }}>
+                  <div style={{ position: 'absolute', top: 0, left: '15%', right: '15%', height: '2px', background: 'linear-gradient(90deg, transparent, #c084fc, transparent)' }} />
+                  
+                  <h3 style={{ fontFamily: 'var(--font-display)', color: 'white', textAlign: 'center', marginBottom: '28px', fontSize: '1.5rem', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+                    <span style={{ fontSize: '1.8rem', marginRight: '10px', verticalAlign: 'middle', filter: 'drop-shadow(0 0 12px rgba(167, 139, 250, 0.8))' }}>📜</span>
+                    Astrological Summary
+                  </h3>
+
+                  <div style={{
+                    fontFamily: 'var(--font-serif)',
+                    fontSize: '1.1rem',
+                    color: 'var(--color-text)',
+                    lineHeight: '1.8',
+                    letterSpacing: '0.01em',
                   }}>
-                    {chart.chart_summary}
-                  </pre>
+                    {chart.chart_summary.split('\n').map((line, idx) => {
+                      if (!line.trim()) return <div key={idx} style={{ height: '16px' }} />
+                      
+                      // Handle headers / highlighted emphasis lines
+                      if (line.trim().startsWith('###')) {
+                        return <h4 key={idx} style={{ color: 'white', marginTop: '20px', marginBottom: '8px', fontFamily: 'var(--font-display)' }}>{line.replace(/###/g, '').trim()}</h4>
+                      }
+                      
+                      // Simple markdown bold parser for **text**
+                      if (line.includes('**')) {
+                        const parts = line.split(/(\*\*.*?\*\*)/g)
+                        return (
+                          <p key={idx} style={{ marginBottom: '12px' }}>
+                            {parts.map((part, pIdx) => {
+                              if (part.startsWith('**') && part.endsWith('**')) {
+                                return <strong key={pIdx} style={{ color: '#c084fc', fontWeight: 'bold' }}>{part.slice(2, -2)}</strong>
+                              }
+                              return part
+                            })}
+                          </p>
+                        )
+                      }
+                      
+                      return <p key={idx} style={{ marginBottom: '12px' }}>{line}</p>
+                    })}
+                  </div>
                 </div>
               )}
             </div>
