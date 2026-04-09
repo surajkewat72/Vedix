@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends
 from app.routers.auth import get_current_user
 from app.models import BirthDetailsRequest, BirthDetailsResponse, LifeArea
 from app.services.astrology import calculate_chart
-from app.services.huggingface import generate_life_areas
+from app.services.huggingface import generate_life_areas, generate_chart_reading
 from app.supabase_client import get_supabase_admin
 import logging
 
@@ -41,8 +41,11 @@ async def calculate_birth_chart(
         raw_areas = await generate_life_areas(chart.chart_summary)
         if raw_areas:
             chart.life_areas = [LifeArea(**area) for area in raw_areas]
+            
+        # Also generate an authentic chart reading summary instead of showing raw technical data
+        chart.chart_summary = await generate_chart_reading(chart.chart_summary)
     except Exception as e:
-        logger.error(f"Failed to generate life areas: {e}")
+        logger.error(f"Failed to generate AI insights: {e}")
 
     # Save to Supabase
     try:

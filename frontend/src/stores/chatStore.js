@@ -42,6 +42,9 @@ export const useChatStore = create((set, get) => ({
     const historyForApi = messages.slice(-20).map(m => ({ role: m.role, content: m.content }))
 
     try {
+      // Simulate human reading and typing delay (1.5 to 3 seconds)
+      await new Promise(resolve => setTimeout(resolve, 1500 + Math.random() * 1500));
+
       let fullResponse = ''
 
       await chatApi.sendMessage(
