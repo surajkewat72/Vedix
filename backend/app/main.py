@@ -41,7 +41,7 @@ app.include_router(chat.router)
 app.include_router(swisseph_chart.router)
 
 
-@app.get("/")
+@app.api_route("/", methods=["GET", "HEAD"])
 async def root():
     return {
         "app": "Vedix AI Astrology API",
@@ -50,6 +50,6 @@ async def root():
     }
 
 
-@app.get("/health")
+@app.api_route("/health", methods=["GET", "HEAD"])
 async def health():
     return {"status": "ok"}
